@@ -1,10 +1,10 @@
 {
-  "name": "qn",
+  "name": "esh-qn",
   "version": "1.0.1",
   "description": "Another qiniu API client for Node.js.",
   "main": "index.js",
   "scripts": {
-    "test": "mocha test/*.test.js --timeout 15000 --require should-http"
+    "test": "mocha test/rs.test.js --timeout 15000 --require should-http"
   },
   "dependencies": {
     "buffer-type": "~0.0.2",

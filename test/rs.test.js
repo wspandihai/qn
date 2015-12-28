@@ -43,158 +43,158 @@ describe('rs.test.js', function() {
   });
 
   describe('stat()', function() {
-    it('should return stat of ' + rsOpFile, function(done) {
-      this.client.stat(rsOpFile, function(err, info) {
-        should.not.exist(err);
-        should.exist(info);
-        info.should.have.keys('fsize', 'hash', 'mimeType', 'putTime')
-        info.fsize.should.equal(8);
-        info.hash.should.equal('FvnDEnGu6pjzxxxc5d6IlNMrbDnH');
-        info.mimeType.should.equal('text/plain');
-        info.putTime.should.match(/^\d+$/);
-        done();
-      });
+  it('should return stat of ' + rsOpFile, function(done) {
+    this.client.stat(rsOpFile, function(err, info) {
+      should.not.exist(err);
+      should.exist(info);
+      info.should.have.keys('fsize', 'hash', 'mimeType', 'putTime')
+      info.fsize.should.equal(8);
+      info.hash.should.equal('FvnDEnGu6pjzxxxc5d6IlNMrbDnH');
+      info.mimeType.should.equal('text/plain');
+      info.putTime.should.match(/^\d+$/);
+      done();
     });
+  });
 
-    it('should return QiniuFileNotExistsError', function(done) {
-      this.client.stat('qn/rs_op_not_exists.txt', function(err) {
+  it('should return QiniuFileNotExistsError', function(done) {
+    this.client.stat('qn/rs_op_not_exists.txt', function(err) {
+      should.exist(err);
+      err.name.should.equal('QiniuFileNotExistsError');
+      done();
+    });
+  });
+});
+
+describe('move()', function() {
+  it('should move ' + rsOpFile + ' to ' + rsOpFileMove, function(done) {
+    this.client.move(rsOpFile, rsOpFileMove, function(err, result) {
+      should.not.exist(err);
+      should.not.exist(result);
+      done();
+    });
+  });
+
+  it('should return QiniuFileNotExistsError when move not exist file', function(done) {
+    this.client.move('qn/rs_op_not_exists.txt', rsOpFileMove, function(err, result) {
+      should.exist(err);
+      err.name.should.equal('QiniuFileNotExistsError');
+      err.message.should.equal('no such file or directory');
+      err.code.should.equal(612);
+      done();
+    });
+  });
+
+  it('should return QiniuFileExistsError when src and dest are same', function(done) {
+    var that = this;
+    this.client.move(rsOpFile, rsOpFileMove, function(err, result) {
+      that.client.move(rsOpFileMove, rsOpFileMove, function(err, result) {
         should.exist(err);
-        err.name.should.equal('QiniuFileNotExistsError');
+        err.name.should.equal('QiniuFileExistsError');
         done();
       });
     });
   });
 
-  describe('move()', function() {
-    it('should move ' + rsOpFile + ' to ' + rsOpFileMove, function(done) {
-      this.client.move(rsOpFile, rsOpFileMove, function(err, result) {
+  it('should return QiniuFileExistsError', function(done) {
+    var that = this;
+    that.client.move(rsOpFile, rsOpFileMove, function(err, result) {
+      should.not.exist(err);
+      should.not.exist(result);
+      that.client.uploadFile(path.join(fixtures, 'foo.txt'), {
+        key: rsOpFile
+      }, function(err) {
         should.not.exist(err);
-        should.not.exist(result);
-        done();
-      });
-    });
-
-    it('should return QiniuFileNotExistsError when move not exist file', function(done) {
-      this.client.move('qn/rs_op_not_exists.txt', rsOpFileMove, function(err, result) {
-        should.exist(err);
-        err.name.should.equal('QiniuFileNotExistsError');
-        err.message.should.equal('no such file or directory');
-        err.code.should.equal(612);
-        done();
-      });
-    });
-
-    it('should return QiniuFileExistsError when src and dest are same', function(done) {
-      var that = this;
-      this.client.move(rsOpFile, rsOpFileMove, function(err, result) {
-        that.client.move(rsOpFileMove, rsOpFileMove, function(err, result) {
-          should.exist(err);
-          err.name.should.equal('QiniuFileExistsError');
-          done();
-        });
-      });
-    });
-
-    it('should return QiniuFileExistsError', function(done) {
-      var that = this;
-      that.client.move(rsOpFile, rsOpFileMove, function(err, result) {
-        should.not.exist(err);
-        should.not.exist(result);
-        that.client.uploadFile(path.join(fixtures, 'foo.txt'), {
-          key: rsOpFile
-        }, function(err) {
-          should.not.exist(err);
-          that.client.move(rsOpFile, rsOpFileMove, function(err, result) {
-            should.exist(err);
-            err.name.should.equal('QiniuFileExistsError');
-            err.message.should.equal('file exists');
-            err.code.should.equal(614);
-            done();
-          });
-        });
-      });
-    });
-  });
-
-  describe('copy', function() {
-    it('should copy ' + rsOpFile + ' to ' + rsOpFileCopy, function(done) {
-      this.client.copy(rsOpFile, rsOpFileCopy, function(err, result) {
-        should.not.exist(err);
-        should.not.exist(result);
-        done();
-      });
-    });
-
-    it('should return QiniuFileNotExistsError when copy not exist file', function(done) {
-      this.client.copy('qn/rs_op_not_exists.txt', rsOpFileCopy, function(err, result) {
-        should.exist(err);
-        err.name.should.equal('QiniuFileNotExistsError');
-        err.message.should.equal('no such file or directory');
-        err.code.should.equal(612);
-        done();
-      });
-    });
-
-    it('should return QiniuFileExistsError when src and dest are same', function(done) {
-      var that = this;
-      this.client.copy(rsOpFile, rsOpFileCopy, function(err, result) {
-        that.client.copy(rsOpFileCopy, rsOpFileCopy, function(err, result) {
+        that.client.move(rsOpFile, rsOpFileMove, function(err, result) {
           should.exist(err);
           err.name.should.equal('QiniuFileExistsError');
           err.message.should.equal('file exists');
+          err.code.should.equal(614);
           done();
         });
       });
     });
+  });
+});
 
-    it('should return QiniuFileExistsError', function(done) {
-      var that = this;
-      that.client.copy(rsOpFile, rsOpFileCopy, function(err, result) {
+describe('copy', function() {
+  it('should copy ' + rsOpFile + ' to ' + rsOpFileCopy, function(done) {
+    this.client.copy(rsOpFile, rsOpFileCopy, function(err, result) {
+      should.not.exist(err);
+      should.not.exist(result);
+      done();
+    });
+  });
+
+  it('should return QiniuFileNotExistsError when copy not exist file', function(done) {
+    this.client.copy('qn/rs_op_not_exists.txt', rsOpFileCopy, function(err, result) {
+      should.exist(err);
+      err.name.should.equal('QiniuFileNotExistsError');
+      err.message.should.equal('no such file or directory');
+      err.code.should.equal(612);
+      done();
+    });
+  });
+
+  it('should return QiniuFileExistsError when src and dest are same', function(done) {
+    var that = this;
+    this.client.copy(rsOpFile, rsOpFileCopy, function(err, result) {
+      that.client.copy(rsOpFileCopy, rsOpFileCopy, function(err, result) {
+        should.exist(err);
+        err.name.should.equal('QiniuFileExistsError');
+        err.message.should.equal('file exists');
+        done();
+      });
+    });
+  });
+
+  it('should return QiniuFileExistsError', function(done) {
+    var that = this;
+    that.client.copy(rsOpFile, rsOpFileCopy, function(err, result) {
+      should.not.exist(err);
+      should.not.exist(result);
+      that.client.uploadFile(path.join(fixtures, 'foo.txt'), {
+        key: rsOpFile
+      }, function(err) {
         should.not.exist(err);
-        should.not.exist(result);
-        that.client.uploadFile(path.join(fixtures, 'foo.txt'), {
-          key: rsOpFile
-        }, function(err) {
-          should.not.exist(err);
-          that.client.copy(rsOpFile, rsOpFileCopy, function(err, result) {
-            should.exist(err);
-            err.name.should.equal('QiniuFileExistsError');
-            err.message.should.equal('file exists');
-            err.code.should.equal(614);
-            done();
-          });
+        that.client.copy(rsOpFile, rsOpFileCopy, function(err, result) {
+          should.exist(err);
+          err.name.should.equal('QiniuFileExistsError');
+          err.message.should.equal('file exists');
+          err.code.should.equal(614);
+          done();
         });
       });
     });
   });
+});
 
-  describe('delete', function() {
-    it('should delete "' + rsOpFile + '" file', function(done) {
-      this.client.delete(rsOpFile, function(err, result) {
-        should.not.exist(err);
-        should.not.exist(result);
-        done();
-      });
-    });
-
-    it('should delete "' + '/' + rsOpFile + '" file', function(done) {
-      this.client.delete('/' + rsOpFile, function(err, result) {
-        should.not.exist(err);
-        should.not.exist(result);
-        done();
-      });
-    });
-
-    it('should delete not exists file return QiniuFileNotExistsError', function(done) {
-      this.client.delete('qn/rs_op_not_exists.txt', function(err, result) {
-        should.exist(err);
-        err.name.should.equal('QiniuFileNotExistsError');
-        err.message.should.equal('no such file or directory');
-        err.code.should.equal(612);
-        done();
-      });
+describe('delete', function() {
+  it('should delete "' + rsOpFile + '" file', function(done) {
+    this.client.delete(rsOpFile, function(err, result) {
+      should.not.exist(err);
+      should.not.exist(result);
+      done();
     });
   });
+
+  it('should delete "' + '/' + rsOpFile + '" file', function(done) {
+    this.client.delete('/' + rsOpFile, function(err, result) {
+      should.not.exist(err);
+      should.not.exist(result);
+      done();
+    });
+  });
+
+  it('should delete not exists file return QiniuFileNotExistsError', function(done) {
+    this.client.delete('qn/rs_op_not_exists.txt', function(err, result) {
+      should.exist(err);
+      err.name.should.equal('QiniuFileNotExistsError');
+      err.message.should.equal('no such file or directory');
+      err.code.should.equal(612);
+      done();
+    });
+  });
+});
 
 
   describe('prefetch', function() {
